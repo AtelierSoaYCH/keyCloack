@@ -1,7 +1,11 @@
 server:
   port: 8085
-
+# spring.main.allow-bean-definition-overriding=true
 spring:
+  main:
+    allow-bean-definition-overriding: true
+  autoconfigure:
+    exclude: org.springframework.boot.actuate.autoconfigure.security.reactive.ReactiveManagementWebSecurityAutoConfiguration
   datasource:
     url: jdbc:h2:mem:mydb
     username: mozen
@@ -11,25 +15,39 @@ spring:
   security:
     oauth2:
       client:
-        provider:
-          my-keycloak-provider:
-            issuer-uri: http://localhost:8180/auth/realms/SpringBootKeyCloak
         registration:
           keycloak-spring-gateway-client:
             provider: my-keycloak-provider
-            client-id: spring-boot-keycloak
+            client-id: spring-boot-keycloak-client
             authorization-grant-type: authorization_code
-            redirect-uri: "http://localhost:8085/login/oauth2/code/{registrationId}"
+            redirect-uri: http://localhost:8085/login/oauth2/code/{registrationId}
+            client-secret: 45soubtNnggOgJDjqcUXNEfhIJ6pqQ7u
+            scope: openid,profile,email
+        provider:
+          my-keycloak-provider:
+            issuer-uri: http://localhost:8180/auth/realms/SpringBootKeyCloak
+            authorization-uri: http://localhost:8180/auth/realms/SpringBootKeyCloak/protocol/openid-connect/auth
+            token-uri: http://localhost:8180/auth/realms/SpringBootKeyCloak/protocol/openid-connect/token
+            user-info-uri: http://localhost:8180/auth/realms/SpringBootKeyCloak/protocol/openid-connect/userinfo
+            jwk-set-uri: http://localhost:8180/auth/realms/SpringBootKeyCloak/protocol/openid-connect/certs
+            user-name-attribute: preferred_username
+            # user-name-attribute: email
 logging:
   level:
-    org:
-      springframework:
-        cloud:
-          gateway: DEBUG
     reactor:
       netty:
         http:
           client: DEBUG
+    root: INFO
+    org:
+      springframework:
+        cloud:
+          gateway: DEBUG
+        web:
+          HttpLogging: DEBUG
+          security: DEBUG
+          oauth2: DEBUG
+          gateway: DEBUG
 
 keycloak:
   realm: SpringBootKeyCloak
